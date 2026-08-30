@@ -486,7 +486,13 @@ fi
 
 #[cfg(unix)]
 fn write_fake_tool(path: &std::path::Path, version: &str) {
-    std::fs::write(path, format!("#!/bin/sh\nprintf '%s\\n' '{version}'\n")).unwrap();
+    std::fs::write(
+        path,
+        format!(
+            "#!/bin/sh\ncase \"${{1:-}}\" in\n  --version|-Vv) printf '%s\\n' '{version}' ;;\n  *) cat >/dev/null ;;\nesac\n"
+        ),
+    )
+    .unwrap();
     let mut permissions = std::fs::metadata(path).unwrap().permissions();
     permissions.set_mode(0o755);
     std::fs::set_permissions(path, permissions).unwrap();

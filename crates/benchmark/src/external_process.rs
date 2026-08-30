@@ -1030,17 +1030,16 @@ pub fn product_statuses() -> Vec<ProductStatus> {
     product_catalog().iter().map(|product| product_status(product.id)).collect()
 }
 
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(target_os = "linux")]
 fn parse_peak_rss_bytes(output: &[u8]) -> Option<u64> {
     let output = String::from_utf8_lossy(output);
-    #[cfg(target_os = "linux")]
-    {
-        return parse_gnu_time_peak_rss(&output);
-    }
-    #[cfg(target_os = "macos")]
-    {
-        parse_bsd_time_peak_rss(&output)
-    }
+    parse_gnu_time_peak_rss(&output)
+}
+
+#[cfg(target_os = "macos")]
+fn parse_peak_rss_bytes(output: &[u8]) -> Option<u64> {
+    let output = String::from_utf8_lossy(output);
+    parse_bsd_time_peak_rss(&output)
 }
 
 #[cfg(any(target_os = "macos", test))]
