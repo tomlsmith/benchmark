@@ -1,0 +1,9 @@
+{
+  "name": "tomlsmith-benchmark-prettier",
+  "private": true,
+  "packageManager": "pnpm@11.22.0",
+  "dependencies": {
+    "prettier": "3.9.6",
+    "prettier-plugin-toml": "2.0.6"
+  }
+}

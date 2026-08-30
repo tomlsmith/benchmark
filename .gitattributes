@@ -1,0 +1,15 @@
+* text=auto
+
+*.json text eol=lf
+*.lock text eol=lf
+*.md text eol=lf
+*.rs text eol=lf
+*.sh text eol=lf
+*.toml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Corpus hashes cover exact bytes, including fixtures that deliberately use CRLF.
+/fixtures/**/*.toml -text -eol
+/fixtures/v1.0/edge/crlf.toml binary
+/fixtures/v1.1/edge/crlf.toml binary

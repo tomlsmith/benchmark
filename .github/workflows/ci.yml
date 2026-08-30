@@ -1,0 +1,269 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'schedule' && github.run_id || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  CARGO_TERM_COLOR: always
+  TOMLSMITH_CLI_VERSION: "0.1.0"
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out benchmark
+        uses: actions/checkout@v7
+        with:
+          path: tomlsmith-benchmark
+      - name: Install pinned Rust toolchain
+        working-directory: tomlsmith-benchmark
+        run: rustup toolchain install
+      - name: Cache Cargo artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tomlsmith-benchmark
+          shared-key: lint
+      - name: Format
+        working-directory: tomlsmith-benchmark
+        run: cargo fmt --all -- --check
+      - name: Check shell scripts
+        working-directory: tomlsmith-benchmark
+        run: bash -n scripts/check.sh scripts/check-products.sh scripts/product-env.sh scripts/setup-products.sh scripts/run-bench.sh
+      - name: Verify exact-byte fixture attributes
+        working-directory: tomlsmith-benchmark
+        run: |
+          test "$(git check-attr text -- fixtures/v1.0/medium/structured.toml)" = "fixtures/v1.0/medium/structured.toml: text: unset"
+          test "$(git check-attr eol -- fixtures/v1.0/medium/structured.toml)" = "fixtures/v1.0/medium/structured.toml: eol: unset"
+          test "$(git check-attr text -- fixtures/v1.0/small/specification.toml)" = "fixtures/v1.0/small/specification.toml: text: unset"
+          test "$(git check-attr eol -- fixtures/v1.0/small/specification.toml)" = "fixtures/v1.0/small/specification.toml: eol: unset"
+          test "$(git check-attr text -- fixtures/v1.0/engineering/cargo-lock.toml)" = "fixtures/v1.0/engineering/cargo-lock.toml: text: unset"
+          test "$(git check-attr eol -- fixtures/v1.0/engineering/cargo-lock.toml)" = "fixtures/v1.0/engineering/cargo-lock.toml: eol: unset"
+      - name: Clippy
+        working-directory: tomlsmith-benchmark
+        run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out benchmark
+        uses: actions/checkout@v7
+        with:
+          path: tomlsmith-benchmark
+      - name: Install pinned Rust toolchain
+        working-directory: tomlsmith-benchmark
+        run: rustup toolchain install
+      - name: Cache Cargo artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tomlsmith-benchmark
+          shared-key: test
+      - name: Verify generated corpus
+        working-directory: tomlsmith-benchmark
+        run: cargo run --locked --quiet -p tomlsmith-benchmark-cli -- --root . generate --check
+      - name: Test
+        working-directory: tomlsmith-benchmark
+        run: cargo test --workspace --locked
+
+  build-product:
+    name: Install published TomlSmith native CLI
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out benchmark
+        uses: actions/checkout@v7
+        with:
+          path: tomlsmith-benchmark
+      - name: Install pinned Rust toolchain
+        working-directory: tomlsmith-benchmark
+        run: rustup toolchain install
+      - name: Cache Cargo artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tomlsmith-benchmark
+          shared-key: build-product
+      - name: Install the published TomlSmith native CLI
+        run: |
+          cargo install tomlsmith-cli \
+            --version "=${TOMLSMITH_CLI_VERSION}" \
+            --locked \
+            --root "${{ github.workspace }}/tomlsmith-product"
+      - name: Upload the TomlSmith native CLI
+        uses: actions/upload-artifact@v7
+        with:
+          name: tomlsmith-product-bin
+          path: tomlsmith-product/bin/tomlsmith
+          retention-days: 7
+          if-no-files-found: error
+          overwrite: true
+
+  verify:
+    name: Verify correctness
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: build-product
+    steps:
+      - name: Check out benchmark
+        uses: actions/checkout@v7
+        with:
+          path: tomlsmith-benchmark
+      - name: Install pinned Rust toolchain
+        working-directory: tomlsmith-benchmark
+        run: rustup toolchain install
+      - name: Cache Cargo artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tomlsmith-benchmark
+          shared-key: verify
+      - name: Download the TomlSmith native CLI
+        uses: actions/download-artifact@v8
+        with:
+          name: tomlsmith-product-bin
+          path: product-bin
+      - name: Restore product executable permissions
+        run: chmod +x "${{ github.workspace }}/product-bin/tomlsmith"
+      - name: Verify library and product correctness
+        working-directory: tomlsmith-benchmark
+        env:
+          TOMLSMITH_BIN: ${{ github.workspace }}/product-bin/tomlsmith
+        # rust-cache exports CARGO_INCREMENTAL=0, but the benchmark suite requires
+        # the CARGO_*INCREMENTAL variables to stay unset for a comparable profile.
+        run: |
+          unset CARGO_INCREMENTAL CARGO_BUILD_INCREMENTAL
+          cargo run --locked --quiet -p tomlsmith-benchmark-cli -- --root . verify
+
+  bench-smoke:
+    name: Criterion smoke (${{ matrix.operation }}, ${{ matrix.toml }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: build-product
+    strategy:
+      fail-fast: false
+      matrix:
+        operation: [check, format]
+        toml: ["1.0", "1.1"]
+        include:
+          - toml: "1.0"
+            fixture: v1_0_small
+          - toml: "1.1"
+            fixture: v1_1_small
+    steps:
+      - name: Check out benchmark
+        uses: actions/checkout@v7
+        with:
+          path: tomlsmith-benchmark
+      - name: Install pinned Rust toolchain
+        working-directory: tomlsmith-benchmark
+        run: rustup toolchain install
+      - name: Cache Cargo artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tomlsmith-benchmark
+          shared-key: bench-smoke
+      - name: Download the TomlSmith native CLI
+        uses: actions/download-artifact@v8
+        with:
+          name: tomlsmith-product-bin
+          path: product-bin
+      - name: Restore product executable permissions
+        run: chmod +x "${{ github.workspace }}/product-bin/tomlsmith"
+      - name: Criterion smoke test
+        working-directory: tomlsmith-benchmark
+        env:
+          TOMLSMITH_BIN: ${{ github.workspace }}/product-bin/tomlsmith
+          TOMLSMITH_BENCH_FILTER: e2e/${{ matrix.operation }}/cold-stdin/${{ matrix.toml }}/${{ matrix.fixture }}
+          TOMLSMITH_BENCH_WARMUP_SECS: "0.05"
+          TOMLSMITH_BENCH_MEASUREMENT_SECS: "0.05"
+          TOMLSMITH_BENCH_SAMPLE_SIZE: "10"
+        # rust-cache exports CARGO_INCREMENTAL=0, but the benchmark suite requires
+        # the CARGO_*INCREMENTAL variables to stay unset for a comparable profile.
+        run: |
+          unset CARGO_INCREMENTAL CARGO_BUILD_INCREMENTAL
+          cargo bench --locked -p tomlsmith-benchmark --bench competitors -- --test
+
+  product-e2e:
+    name: Product e2e (${{ matrix.operation }}, ${{ matrix.toml }})
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        operation: [check, format]
+        toml: ["1.0", "1.1"]
+        include:
+          - toml: "1.0"
+            fixture: v1_0_small
+          - toml: "1.1"
+            fixture: v1_1_small
+    steps:
+      - name: Check out benchmark
+        uses: actions/checkout@v7
+        with:
+          path: tomlsmith-benchmark
+      - name: Install pinned Rust toolchain
+        working-directory: tomlsmith-benchmark
+        run: rustup toolchain install
+      - name: Install Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.27.0"
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.22.0
+      - name: Ensure the GNU time resource meter exists
+        run: |
+          if [ ! -x /usr/bin/time ]; then
+            sudo apt-get update
+            sudo apt-get install -y time
+          fi
+          /usr/bin/time --version
+      - name: Cache Cargo artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          # setup-products.sh installs product packages outside the workspace,
+          # so only the benchmark workspace target is cacheable.
+          workspaces: tomlsmith-benchmark
+          shared-key: product-e2e
+      - name: Install pinned products
+        working-directory: tomlsmith-benchmark
+        run: ./scripts/setup-products.sh
+      - name: Smoke-test products on one lane
+        working-directory: tomlsmith-benchmark
+        env:
+          TOMLSMITH_BENCH_FILTER: e2e/${{ matrix.operation }}/cold-stdin/${{ matrix.toml }}/${{ matrix.fixture }}
+          TOMLSMITH_BENCH_WARMUP_SECS: "0.05"
+          TOMLSMITH_BENCH_MEASUREMENT_SECS: "0.05"
+          TOMLSMITH_BENCH_SAMPLE_SIZE: "10"
+        # rust-cache exports CARGO_INCREMENTAL=0, but the benchmark suite requires
+        # the CARGO_*INCREMENTAL variables to stay unset for a comparable profile.
+        run: |
+          unset CARGO_INCREMENTAL CARGO_BUILD_INCREMENTAL
+          ./scripts/run-bench.sh ci-${{ matrix.operation }}-${{ matrix.toml }}-${{ github.run_id }}
+      - name: Upload product smoke results
+        uses: actions/upload-artifact@v7
+        with:
+          name: product-e2e-${{ matrix.operation }}-${{ matrix.toml }}-${{ github.run_id }}
+          path: tomlsmith-benchmark/results/ci-${{ matrix.operation }}-${{ matrix.toml }}-${{ github.run_id }}/
+          if-no-files-found: error
+          overwrite: true

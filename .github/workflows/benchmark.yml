@@ -1,0 +1,113 @@
+name: Benchmark
+
+# Full-fidelity end-to-end lanes with the default Criterion settings
+# (3 s warmup, 30 cold-start samples per product) plus peak-RSS capture.
+# Shared GitHub runners are noisy, so these numbers indicate relative
+# ordering and regressions; the medians published in README.md come from
+# dedicated hardware. Complete result directories (criterion raw.csv,
+# environment.json, verification.json, peak-rss.json) are uploaded as
+# temporary diagnostic artifacts. Raw result directories and archives stay
+# out of Git; maintainers may promote a checksummed archive to a Release asset.
+
+on:
+  workflow_dispatch:
+    inputs:
+      lanes:
+        description: Space-separated lanes to run
+        required: false
+        default: check-v1_0 check-v1_1 format-v1_0 format-v1_1
+  schedule:
+    - cron: "41 4 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  e2e-benchmark:
+    name: End-to-end lanes
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out benchmark
+        uses: actions/checkout@v7
+        with:
+          path: tomlsmith-benchmark
+
+      - name: Record benchmark inputs
+        run: |
+          {
+            echo "## Benchmark inputs"
+            echo
+            echo "- tomlsmith-cli crate: \`0.1.0\`"
+            echo "- tomlsmith-benchmark: \`$(git -C tomlsmith-benchmark rev-parse HEAD)\`"
+            echo
+            echo "> Shared-runner numbers indicate relative ordering only;"
+            echo "> published README medians come from dedicated hardware."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.92.0
+
+      - name: Cache Cargo artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tomlsmith-benchmark
+
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.0"
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.22.0
+
+      - name: Install pinned products
+        working-directory: tomlsmith-benchmark
+        run: ./scripts/setup-products.sh
+
+      - name: Run benchmark lanes
+        working-directory: tomlsmith-benchmark
+        env:
+          LANES: ${{ inputs.lanes || 'check-v1_0 check-v1_1 format-v1_0 format-v1_1' }}
+        run: |
+          for lane in $LANES; do
+            case "$lane" in
+              check-v1_0) filter="e2e/check/cold-stdin/1.0/v1_0_medium" ;;
+              check-v1_1) filter="e2e/check/cold-stdin/1.1/v1_1_medium" ;;
+              format-v1_0) filter="e2e/format/cold-stdin/1.0/v1_0_medium" ;;
+              format-v1_1) filter="e2e/format/cold-stdin/1.1/v1_1_medium" ;;
+              *) echo "unknown lane: $lane" >&2; exit 2 ;;
+            esac
+            TOMLSMITH_BENCH_FILTER="$filter" \
+              ./scripts/run-bench.sh "gha-${lane}-${{ github.run_id }}"
+          done
+
+      - name: Summarize lane medians
+        working-directory: tomlsmith-benchmark
+        run: |
+          {
+            echo "## Lane results"
+            echo
+            python3 scripts/summarize-results.py results/gha-*-${{ github.run_id }}
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload full result directories
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: benchmark-results-${{ github.run_id }}
+          path: tomlsmith-benchmark/results/gha-*
+          retention-days: 90

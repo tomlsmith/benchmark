@@ -1,0 +1,26 @@
+[package]
+name = "tomlsmith-benchmark-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "tomlsmith-benchmark"
+path = "src/main.rs"
+
+[dependencies]
+clap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true
+tomlsmith-benchmark.workspace = true
+
+[dev-dependencies]
+assert_cmd = "2.1.1"
+serde_json.workspace = true
+
+[lints]
+workspace = true

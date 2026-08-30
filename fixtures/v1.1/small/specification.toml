@@ -1,0 +1,158 @@
+# Deterministic synthetic coverage of the published TOML specification.
+# English, 中文, русский and emoji comments 😀 are valid UTF-8.
+bare_key = "bare key"
+"quoted.key" = "the dot is part of this key"
+'literal.key' = 'literal quoted key'
+"" = "empty quoted key"
+1234 = "numeric bare key"
+unicode_key = "café 東京 🚀" # trailing comment
+combining_unicode = "é and é remain distinct scalar sequences"
+dotted . key = "whitespace around dots"
+quoted_dotted . "part.with.dot" = "quoted dotted key"
+
+basic_string = "basic UTF-8 string"
+escaped_string = "backspace=\b tab=\t newline=\n formfeed=\f carriage=\r quote=\" slash=\\"
+unicode_escape = "delta=\u03B4 rocket=\U0001F680"
+raw_tab = "before	after"
+multiline_basic = """
+The first newline is trimmed.
+A continuation \
+    removes surrounding whitespace.
+Here are two quotation marks: "".
+"""
+literal_string = 'C:\Users\nodejs\templates'
+multiline_literal = '''
+The first newline is trimmed.
+C:\Users\nodejs\templates
+Here are two apostrophes: ''.
+'''
+
+decimal_integer = 42
+positive_integer = +17
+negative_integer = -17
+zero_integer = 0
+underscored_integer = 1_000_000
+hex_integer = 0xDEAD_BEEF
+octal_integer = 0o755
+binary_integer = 0b1101_0010
+fractional_float = 3.1415
+exponent_float = 5e+22
+signed_exponent_float = -2E-2
+underscored_float = 224_617.445_991_228
+positive_infinity = inf
+negative_infinity = -inf
+not_a_number = nan
+negative_not_a_number = -nan
+enabled = true
+disabled = false
+
+offset_datetime = 1979-05-27T07:32:00Z
+offset_datetime_space = 1979-05-27 07:32:00-07:00
+offset_datetime_fraction = 1979-05-27T00:32:00.999999-07:00
+local_datetime = 1979-05-27T07:32:00
+local_datetime_space = 1979-05-27 07:32:00.123456
+local_date = 1979-05-27
+local_time = 07:32:00.999999
+
+empty_array = []
+integer_array = [1, 2, 3]
+mixed_array = [0.1, 2, "three", true, 1979-05-27T07:32:00Z]
+nested_array = [[1, 2], ["a", "b"]]
+multiline_array = [
+  "alpha",
+  # comments and trailing commas are valid in arrays
+  "beta",
+]
+empty_inline_table = {}
+inline_table = { first = "Tom", nested = { enabled = true }, dotted.key = "value" }
+inline_table_array = [{ x = 1, y = 2 }, { x = 3, y = 4 }]
+
+# TOML 1.1 additions.
+escape_character = "\e"
+hex_escape = "\x41"
+short_offset_datetime = 1979-05-27T07:32Z
+short_local_datetime = 1979-05-27T07:32
+short_local_time = 07:32
+multiline_inline_table = {
+  alpha = 1, # comments and newlines are valid in TOML 1.1 inline tables
+  nested = {
+    enabled = true,
+  },
+  trailing = true,
+}
+
+[standard_table]
+bare = "value"
+"quoted key" = "value"
+'literal key' = "value"
+
+[standard_table.child]
+depth = 1
+
+[dog."tater.man"]
+type.name = "pug"
+
+[implicit.parent.child]
+created_before_parent = true
+
+[implicit]
+declared_after_child = true
+
+[empty_table]
+
+[[products]]
+name = "Hammer"
+sku = 738594937
+
+[products.details]
+weight = 1.25
+dimensions = { width = 10, height = 4 }
+
+[[products.variants]]
+name = "steel"
+
+[[products.variants]]
+name = "titanium"
+
+[[products]]
+name = "Nail"
+sku = 284758393
+
+[[products.variants]]
+name = "gray"
+
+[[records]]
+id = 0
+name = "synthetic-record-000000"
+enabled = true
+ratio = 0.0
+created_at = 2026-08-29T12:34:56Z
+labels = ["parser", "formatter", "record-000000"]
+metadata = { shard = 0, previous = 0, digest = "0000000000000000000000000000000000000000000000000000000000000000" }
+
+[[records]]
+id = 1
+name = "synthetic-record-000001"
+enabled = false
+ratio = 1.1
+created_at = 2026-08-29T12:34:56Z
+labels = ["parser", "formatter", "record-000001"]
+metadata = { shard = 1, previous = 0, digest = "0000000000000000000000000000000000000000000000000000000000000001" }
+
+[[records]]
+id = 2
+name = "synthetic-record-000002"
+enabled = true
+ratio = 2.2
+created_at = 2026-08-29T12:34:56Z
+labels = ["parser", "formatter", "record-000002"]
+metadata = { shard = 2, previous = 1, digest = "0000000000000000000000000000000000000000000000000000000000000002" }
+
+[[records]]
+id = 3
+name = "synthetic-record-000003"
+enabled = false
+ratio = 3.3
+created_at = 2026-08-29T12:34:56Z
+labels = ["parser", "formatter", "record-000003"]
+metadata = { shard = 3, previous = 2, digest = "0000000000000000000000000000000000000000000000000000000000000003" }

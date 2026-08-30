@@ -1,0 +1,24 @@
+/target/
+/.tools/
+/tools/prettier/node_modules/
+/results/
+/artifacts/
+*.crate
+*.tar.gz
+*.tgz
+*.zip
+/SHA256SUMS
+.DS_Store
+*.profraw
+*.profdata
+*.log
+
+# Local research notes are process artifacts, not part of the published repository.
+/CONTEXT.md
+/docs/adr/
+/docs/audits/
+/docs/competitor-matrix.md
+/docs/plans/
+/docs/research/
+/docs/reviews/
+/docs/roadmap.md

@@ -1,0 +1,8 @@
+# Deterministic CRLF diagnostic; 中文 comment
+title = "CRLF line endings"
+values = [1, 2, 3] # trailing comment
+
+[owner]
+name = "Nirvana-Jie"
+hex_escape = "\x43"
+short_time = 08:15
