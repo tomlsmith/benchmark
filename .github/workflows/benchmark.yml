@@ -42,7 +42,7 @@ jobs:
           {
             echo "## Benchmark inputs"
             echo
-            echo "- tomlsmith-cli crate: \`0.2.0\`"
+            echo "- tomlsmith-cli crate: \`0.3.0\`"
             echo "- tomlsmith-benchmark: \`$(git -C tomlsmith-benchmark rev-parse HEAD)\`"
             echo
             echo "> Shared-runner numbers indicate relative ordering only;"

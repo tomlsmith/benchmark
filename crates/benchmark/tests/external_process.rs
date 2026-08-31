@@ -28,7 +28,7 @@ fn product_catalog_exposes_cross_language_end_to_end_entry_points() {
     );
     assert_eq!(
         catalog.iter().map(|product| product.required_version).collect::<Vec<_>>(),
-        vec!["0.2.0", "1.4.1", "0.10.0", "3.9.6", "0.56.1", "1.6.0", "2.4.3"]
+        vec!["0.3.0", "1.4.1", "0.10.0", "3.9.6", "0.56.1", "1.6.0", "2.4.3"]
     );
     assert_eq!(
         catalog
@@ -99,7 +99,7 @@ fn non_go_product_probes_reject_unpinned_versions() {
     write_executable(&binary, "#!/bin/sh\nprintf 'product 9.9.9\\n'\n");
 
     for (product_id, required_version) in [
-        (ProductId::TomlSmith, "0.2.0"),
+        (ProductId::TomlSmith, "0.3.0"),
         (ProductId::Tombi, "1.4.1"),
         (ProductId::Taplo, "0.10.0"),
         (ProductId::Prettier, "3.9.6"),
@@ -228,13 +228,13 @@ fn generic_command_matrix_uses_official_stdin_entry_points() {
     let cases: Vec<(ProductId, &str, ProductOperation, Vec<&str>)> = vec![
         (
             ProductId::TomlSmith,
-            "0.2.0",
+            "0.3.0",
             ProductOperation::Check,
             vec!["--toml-version", "1.0", "check", "-"],
         ),
         (
             ProductId::TomlSmith,
-            "0.2.0",
+            "0.3.0",
             ProductOperation::Format,
             vec!["--toml-version", "1.0", "fmt", "-"],
         ),

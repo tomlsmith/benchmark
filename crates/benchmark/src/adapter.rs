@@ -376,7 +376,7 @@ const TOML_1_0_ONLY: &[TomlVersion] = &[TomlVersion::V1_0];
 static TOMLSMITH: AdapterDescriptor = AdapterDescriptor {
     id: "tomlsmith",
     display_name: "TomlSmith",
-    version: Some("0.2.0 (crates.io)"),
+    version: Some("0.3.0 (crates.io)"),
     upstream: "https://github.com/tomlsmith/tomlsmith",
     engine_family: "tomlsmith",
     availability: Availability::Available,

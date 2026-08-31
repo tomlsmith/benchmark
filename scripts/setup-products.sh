@@ -5,7 +5,7 @@ repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 tools_root="$repo_root/.tools"
 bin_dir="$tools_root/bin"
 temporary_directory=$(mktemp -d)
-readonly tomlsmith_cli_version=0.2.0
+readonly tomlsmith_cli_version=0.3.0
 
 cleanup_setup() {
   rm -rf -- "$temporary_directory"
