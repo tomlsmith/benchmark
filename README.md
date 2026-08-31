@@ -6,14 +6,6 @@
 
 TomlSmith Benchmark measures end-to-end cold-start latency, throughput, and peak memory for TOML checking and formatting CLIs. Each sample runs the product command in a new process instead of calling a parser library directly.
 
-*Benchmark `39fb1aaf1618` · crates.io `tomlsmith-cli 0.1.0` · Apple M4 Pro · macOS 26.5.2 · Rust 1.92.0 · 2026-08-31*
-
-> **Provenance:** The measurement was re-anchored to the clean public history before its first push. All benchmark runtime inputs are byte-identical to the measured tree and have SHA-256 fingerprint `315cbeb8ecbdfc5cb20eb71e4b0df13d6a077c05aecf2dcb3f5ea5a6ccdf5f84`.
-
-> **Comparison boundary:** Every row invokes the product's direct CLI executable in a fresh process. TomlSmith is the release-mode Rust CLI; package-manager launchers and wrapper processes are excluded. The four current tables are generated from the same raw result directories as the website.
-
-> **Ranking:** Within each table, 🥇, 🥈, and 🥉 mark the best, second-best, and third-best value in each metric column. Lower is better for latency and Peak RSS; higher is better for throughput.
-
 <!-- BENCHMARK_RESULTS_START -->
 ## Check
 

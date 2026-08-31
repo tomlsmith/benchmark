@@ -6,14 +6,6 @@
 
 TomlSmith Benchmark 测量 TOML 检查与格式化 CLI 的端到端冷启动延迟、吞吐量和峰值内存。每个样本都会新起一个进程运行产品命令，不直接调用解析器库。
 
-*Benchmark `39fb1aaf1618` · crates.io `tomlsmith-cli 0.1.0` · Apple M4 Pro · macOS 26.5.2 · Rust 1.92.0 · 2026-08-31*
-
-> **来源追溯：** 首次推送前，测量来源被重新锚定到清洁的公开历史。所有 Benchmark 运行时输入与实测树逐字节一致，其 SHA-256 指纹为 `315cbeb8ecbdfc5cb20eb71e4b0df13d6a077c05aecf2dcb3f5ea5a6ccdf5f84`。
-
-> **比较边界：** 每一行都在新进程中调用产品的直接 CLI 可执行文件。TomlSmith 使用 release 模式的 Rust CLI，不计入包管理器 launcher 或包装进程。当前四张表与官网由同一组原始结果目录生成。
-
-> **排名：** 每张表中，🥇、🥈、🥉 分别标记每个指标列的第一、第二和第三名。延迟和 Peak RSS 越低越好，吞吐量越高越好。
-
 <!-- BENCHMARK_RESULTS_START -->
 ## Check
 
