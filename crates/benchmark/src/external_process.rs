@@ -115,7 +115,7 @@ const PRODUCT_CATALOG: &[ProductDescriptor] = &[
         display_name: "TomlSmith native CLI",
         implementation_language: "Rust",
         upstream: None,
-        required_version: "0.3.0",
+        required_version: "0.3.1",
         binary_env: "TOMLSMITH_BIN",
         companion_env: None,
         operations: CHECK_AND_FORMAT,

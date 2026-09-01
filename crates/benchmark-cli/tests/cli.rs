@@ -153,7 +153,7 @@ fn peak_rss_json_reports_separate_fresh_process_samples() {
     let directory = tempfile::tempdir().unwrap();
     generate_corpus(directory.path()).unwrap();
     let tomlsmith = directory.path().join("tomlsmith-product");
-    write_fake_tool(&tomlsmith, "tomlsmith 0.3.0");
+    write_fake_tool(&tomlsmith, "tomlsmith 0.3.1");
 
     let output = isolated_cli_command()
         .args([
