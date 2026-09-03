@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="610" viewBox="0 0 1200 610" role="img" aria-labelledby="title desc">
-  <title id="title">TomlSmith benchmark check results</title>
-  <desc id="desc">Bar chart of cold CLI check median latency (logarithmic axis) with peak RSS for separate synthetic TOML 1.0 and TOML 1.1 documents.</desc>
+  <title id="title">TomlSmith benchmark format results</title>
+  <desc id="desc">Bar chart of cold CLI format median latency (logarithmic axis) with peak RSS for separate synthetic TOML 1.0 and TOML 1.1 documents.</desc>
   <rect width="1200" height="610" fill="#f5f7fa"/>
-  <text x="30" y="46" fill="#17324d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="700">Check</text>
+  <text x="30" y="46" fill="#17324d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="700">Format</text>
   <text x="30" y="76" fill="#60758a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="15">Cold CLI · median latency on a logarithmic axis · lower is better</text>
   <text x="1170" y="76" fill="#60758a" font-family="ui-monospace, SFMono-Regular, monospace" font-size="13" text-anchor="end">bar top: median ms · below name: Peak RSS</text>
 
@@ -22,28 +22,36 @@
     <text x="82" y="214.0">1k ms</text>
   </g>
   <g>
-    <path d="M120.8,470 L120.8,386.5 Q120.8,382.5 124.8,382.5 L172.8,382.5 Q176.8,382.5 176.8,386.5 L176.8,470 Z" fill="#2563eb"/>
-    <path d="M238.2,470 L238.2,378.4 Q238.2,374.4 242.2,374.4 L290.2,374.4 Q294.2,374.4 294.2,378.4 L294.2,470 Z" fill="#64748b"/>
-    <path d="M355.8,470 L355.8,355.2 Q355.8,351.2 359.8,351.2 L407.8,351.2 Q411.8,351.2 411.8,355.2 L411.8,470 Z" fill="#64748b"/>
-    <path d="M473.2,470 L473.2,275.2 Q473.2,271.2 477.2,271.2 L525.2,271.2 Q529.2,271.2 529.2,275.2 L529.2,470 Z" fill="#64748b"/>
+    <path d="M105.7,470 L105.7,394.1 Q105.7,390.1 109.7,390.1 L148.7,390.1 Q152.7,390.1 152.7,394.1 L152.7,470 Z" fill="#2563eb"/>
+    <path d="M184.0,470 L184.0,384.0 Q184.0,380.0 188.0,380.0 L227.0,380.0 Q231.0,380.0 231.0,384.0 L231.0,470 Z" fill="#64748b"/>
+    <path d="M262.3,470 L262.3,361.0 Q262.3,357.0 266.3,357.0 L305.3,357.0 Q309.3,357.0 309.3,361.0 L309.3,470 Z" fill="#64748b"/>
+    <path d="M340.7,470 L340.7,357.5 Q340.7,353.5 344.7,353.5 L383.7,353.5 Q387.7,353.5 387.7,357.5 L387.7,470 Z" fill="#64748b"/>
+    <path d="M419.0,470 L419.0,229.9 Q419.0,225.9 423.0,225.9 L462.0,225.9 Q466.0,225.9 466.0,229.9 L466.0,470 Z" fill="#64748b"/>
+    <path d="M497.3,470 L497.3,228.6 Q497.3,224.6 501.3,224.6 L540.3,224.6 Q544.3,224.6 544.3,228.6 L544.3,470 Z" fill="#64748b"/>
   </g>
   <g fill="#17324d" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" text-anchor="middle">
-    <text x="148.8" y="374.5">10.2</text>
-    <text x="266.2" y="366.4">12.7</text>
-    <text x="383.8" y="343.2">23.5</text>
-    <text x="501.2" y="263.2">197</text>
+    <text x="129.2" y="382.1">8.3</text>
+    <text x="207.5" y="372.0">10.9</text>
+    <text x="285.8" y="349.0">20.1</text>
+    <text x="364.2" y="345.5">22.1</text>
+    <text x="442.5" y="217.9">655</text>
+    <text x="520.8" y="216.6">678</text>
   </g>
   <g fill="#17324d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" text-anchor="middle">
-    <text x="148.8" y="492" font-weight="700">TomlSmith</text>
-    <text x="266.2" y="492">BurntSushi</text>
-    <text x="383.8" y="492">Taplo</text>
-    <text x="501.2" y="492">Tombi</text>
+    <text x="129.2" y="492" font-weight="700">TomlSmith</text>
+    <text x="207.5" y="492">tomll</text>
+    <text x="285.8" y="492">dprint</text>
+    <text x="364.2" y="492">Taplo</text>
+    <text x="442.5" y="492">Tombi</text>
+    <text x="520.8" y="492">Prettier</text>
   </g>
   <g fill="#8796a5" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" text-anchor="middle">
-    <text x="148.8" y="510">7.6 MiB</text>
-    <text x="266.2" y="510">9.0 MiB</text>
-    <text x="383.8" y="510">18.9 MiB</text>
-    <text x="501.2" y="510">26.9 MiB</text>
+    <text x="129.2" y="510">7.0 MiB</text>
+    <text x="207.5" y="510">6.5 MiB</text>
+    <text x="285.8" y="510">19.9 MiB</text>
+    <text x="364.2" y="510">18.8 MiB</text>
+    <text x="442.5" y="510">31.9 MiB</text>
+    <text x="520.8" y="510">594.1 MiB</text>
   </g>
 
   <rect x="618" y="106" width="554" height="440" rx="16" fill="#ffffff" stroke="#d8e1ea"/>
@@ -62,23 +70,27 @@
     <text x="672" y="214.0">1k ms</text>
   </g>
   <g>
-    <path d="M730.3,470 L730.3,394.1 Q730.3,390.1 734.3,390.1 L782.3,390.1 Q786.3,390.1 786.3,394.1 L786.3,470 Z" fill="#e7652e"/>
-    <path d="M887.0,470 L887.0,390.0 Q887.0,386.0 891.0,386.0 L939.0,386.0 Q943.0,386.0 943.0,390.0 L943.0,470 Z" fill="#64748b"/>
-    <path d="M1043.7,470 L1043.7,276.6 Q1043.7,272.6 1047.7,272.6 L1095.7,272.6 Q1099.7,272.6 1099.7,276.6 L1099.7,470 Z" fill="#64748b"/>
+    <path d="M710.8,470 L710.8,394.1 Q710.8,390.1 714.8,390.1 L762.8,390.1 Q766.8,390.1 766.8,394.1 L766.8,470 Z" fill="#e7652e"/>
+    <path d="M828.2,470 L828.2,387.8 Q828.2,383.8 832.2,383.8 L880.2,383.8 Q884.2,383.8 884.2,387.8 L884.2,470 Z" fill="#64748b"/>
+    <path d="M945.8,470 L945.8,363.2 Q945.8,359.2 949.8,359.2 L997.8,359.2 Q1001.8,359.2 1001.8,363.2 L1001.8,470 Z" fill="#64748b"/>
+    <path d="M1063.2,470 L1063.2,226.3 Q1063.2,222.3 1067.2,222.3 L1115.2,222.3 Q1119.2,222.3 1119.2,226.3 L1119.2,470 Z" fill="#64748b"/>
   </g>
   <g fill="#17324d" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" text-anchor="middle">
-    <text x="758.3" y="382.1">8.3</text>
-    <text x="915.0" y="378.0">9.3</text>
-    <text x="1071.7" y="264.6">189</text>
+    <text x="738.8" y="382.1">8.4</text>
+    <text x="856.2" y="375.8">9.9</text>
+    <text x="973.8" y="351.2">19.0</text>
+    <text x="1091.2" y="214.3">721</text>
   </g>
   <g fill="#17324d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" text-anchor="middle">
-    <text x="758.3" y="492" font-weight="700">TomlSmith</text>
-    <text x="915.0" y="492">BurntSushi</text>
-    <text x="1071.7" y="492">Tombi</text>
+    <text x="738.8" y="492" font-weight="700">TomlSmith</text>
+    <text x="856.2" y="492">tomll</text>
+    <text x="973.8" y="492">dprint</text>
+    <text x="1091.2" y="492">Tombi</text>
   </g>
   <g fill="#8796a5" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" text-anchor="middle">
-    <text x="758.3" y="510">7.7 MiB</text>
-    <text x="915.0" y="510">9.0 MiB</text>
-    <text x="1071.7" y="510">27.0 MiB</text>
+    <text x="738.8" y="510">7.0 MiB</text>
+    <text x="856.2" y="510">6.6 MiB</text>
+    <text x="973.8" y="510">19.9 MiB</text>
+    <text x="1091.2" y="510">31.5 MiB</text>
   </g>
 </svg>

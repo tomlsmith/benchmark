@@ -19,10 +19,10 @@ The check scenario uses deterministic synthetic documents covering the published
 
 | Product | Median (ms) | MiB/s | Peak RSS (MiB) |
 | --- | ---: | ---: | ---: |
-| TomlSmith native CLI | 10.21🥇 | 12.25🥇 | 7.64🥇 |
-| BurntSushi/toml `tomlv` | 12.67🥈 | 9.88🥈 | 9.02🥈 |
-| Taplo CLI | 23.46🥉 | 5.33🥉 | 18.92🥉 |
-| Tombi | 196.54 | 0.64 | 26.88 |
+| TomlSmith native CLI | 10.21🥇 | 12.26🥇 | 6.98🥇 |
+| BurntSushi/toml `tomlv` | 12.07🥈 | 10.37🥈 | 8.97🥈 |
+| Taplo CLI | 23.34🥉 | 5.36🥉 | 18.59🥉 |
+| Tombi | 206.80 | 0.61 | 27.25 |
 
 </td>
 <td valign="top">
@@ -31,15 +31,15 @@ The check scenario uses deterministic synthetic documents covering the published
 
 | Product | Median (ms) | MiB/s | Peak RSS (MiB) |
 | --- | ---: | ---: | ---: |
-| TomlSmith native CLI | 8.34🥇 | 15.01🥇 | 7.73🥇 |
-| BurntSushi/toml `tomlv` | 9.31🥈 | 13.45🥈 | 9.02🥈 |
-| Tombi | 189.41🥉 | 0.66🥉 | 27.02🥉 |
+| TomlSmith native CLI | 8.17🥇 | 15.33🥇 | 6.95🥇 |
+| BurntSushi/toml `tomlv` | 10.07🥈 | 12.43🥈 | 8.89🥈 |
+| Tombi | 193.31🥉 | 0.65🥉 | 27.28🥉 |
 
 </td>
 </tr>
 </table>
 
-![Check latency and peak RSS for TOML 1.0 and 1.1](assets/check-results-20260831.svg)
+![Check latency and peak RSS for TOML 1.0 and 1.1](assets/check-results-20260903.svg)
 
 ## Format
 
@@ -53,12 +53,12 @@ The format scenario uses the same documents in an intentionally edited layout. A
 
 | Product | Median (ms) | MiB/s | Peak RSS (MiB) |
 | --- | ---: | ---: | ---: |
-| TomlSmith native CLI | 8.36🥇 | 14.97🥇 | 8.38🥈 |
-| pelletier/go-toml `tomll`* | 8.94🥈 | 13.99🥈 | 6.50🥇 |
-| dprint + TOML plugin | 17.96🥉 | 6.97🥉 | 19.89 |
-| Taplo CLI | 21.82 | 5.73 | 19.16🥉 |
-| Prettier + prettier-plugin-toml | 651.33 | 0.19 | 564.28 |
-| Tombi | 712.21 | 0.18 | 31.39 |
+| TomlSmith native CLI | 8.35🥇 | 14.99🥇 | 6.95🥈 |
+| pelletier/go-toml `tomll`* | 10.91🥈 | 11.47🥈 | 6.45🥇 |
+| dprint + TOML plugin | 20.12🥉 | 6.22🥉 | 19.94 |
+| Taplo CLI | 22.07 | 5.67 | 18.77🥉 |
+| Tombi | 655.14 | 0.19 | 31.86 |
+| Prettier + prettier-plugin-toml | 678.41 | 0.18 | 594.09 |
 
 </td>
 <td valign="top">
@@ -67,16 +67,16 @@ The format scenario uses the same documents in an intentionally edited layout. A
 
 | Product | Median (ms) | MiB/s | Peak RSS (MiB) |
 | --- | ---: | ---: | ---: |
-| pelletier/go-toml `tomll`* | 7.12🥇 | 17.57🥇 | 6.50🥇 |
-| TomlSmith native CLI | 8.08🥈 | 15.50🥈 | 8.42🥈 |
-| dprint + TOML plugin | 14.66🥉 | 8.54🥉 | 19.88🥉 |
-| Tombi | 667.66 | 0.19 | 31.80 |
+| TomlSmith native CLI | 8.36🥇 | 14.97🥇 | 7.02🥈 |
+| pelletier/go-toml `tomll`* | 9.87🥈 | 12.68🥈 | 6.56🥇 |
+| dprint + TOML plugin | 18.99🥉 | 6.59🥉 | 19.94🥉 |
+| Tombi | 721.46 | 0.17 | 31.55 |
 
 </td>
 </tr>
 </table>
 
-![Format latency and peak RSS for TOML 1.0 and 1.1](assets/format-results-20260831.svg)
+![Format latency and peak RSS for TOML 1.0 and 1.1](assets/format-results-20260903.svg)
 
 \* The correctness check compares decoded TOML content, not comments or layout. `tomll` reparses and writes the data, discarding comments and changing literal styles. The other formatters preserve comments, so these rows do not represent identical work.
 
