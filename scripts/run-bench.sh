@@ -9,6 +9,7 @@ cd "$repo_root"
 source "$repo_root/scripts/product-env.sh"
 configure_tomlsmith_benchmark_products "$repo_root"
 
+skip_peak_rss=${TOMLSMITH_BENCH_SKIP_PEAK_RSS:-0}
 time_command=${TOMLSMITH_BENCH_TIME_COMMAND:-/usr/bin/time}
 case "$time_command" in
   /*) ;;
@@ -17,8 +18,8 @@ case "$time_command" in
     exit 2
     ;;
 esac
-if [[ ! -x "$time_command" ]]; then
-  echo "peak RSS resource meter is not executable: $time_command" >&2
+if [[ "$skip_peak_rss" != 1 && ! -x "$time_command" ]]; then
+  echo "peak RSS resource meter is not executable: $time_command (set TOMLSMITH_BENCH_SKIP_PEAK_RSS=1 to skip)" >&2
   exit 1
 fi
 export TOMLSMITH_BENCH_TIME_COMMAND=$time_command
@@ -105,13 +106,19 @@ if [[ ! -s "$staging_directory/csv-files.txt" ]]; then
   exit 1
 fi
 
-env -u TOMLSMITH_BENCH_FILTER \
-  "$cargo_command" run --locked --quiet -p tomlsmith-benchmark-cli -- \
-  --root "$repo_root" peak-rss \
-  --fixture "$peak_rss_fixture" \
-  --operation "$peak_rss_operation" \
-  --samples "$peak_rss_samples" \
-  --json > "$staging_directory/peak-rss.json"
+if [[ "$skip_peak_rss" == 1 ]]; then
+  # Diagnostic lanes without a GNU time meter publish an explicit marker so
+  # aggregation never mistakes a skipped sample for a missing bundle.
+  printf '{"skipped": true, "reason": "TOMLSMITH_BENCH_SKIP_PEAK_RSS=1"}\n' > "$staging_directory/peak-rss.json"
+else
+  env -u TOMLSMITH_BENCH_FILTER \
+    "$cargo_command" run --locked --quiet -p tomlsmith-benchmark-cli -- \
+    --root "$repo_root" peak-rss \
+    --fixture "$peak_rss_fixture" \
+    --operation "$peak_rss_operation" \
+    --samples "$peak_rss_samples" \
+    --json > "$staging_directory/peak-rss.json"
+fi
 
 mv "$staging_directory" "$run_directory"
 staging_directory=""

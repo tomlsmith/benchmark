@@ -2,12 +2,12 @@ name: Benchmark
 
 # Full-fidelity end-to-end lanes with the default Criterion settings
 # (3 s warmup, 30 cold-start samples per product) plus peak-RSS capture.
-# Shared GitHub runners are noisy, so these numbers indicate relative
-# ordering and regressions; the medians published in README.md come from
-# dedicated hardware. Complete result directories (criterion raw.csv,
-# environment.json, verification.json, peak-rss.json) are uploaded as
-# temporary diagnostic artifacts. Raw result directories and archives stay
-# out of Git; maintainers may promote a checksummed archive to a Release asset.
+# Every selected lane runs on an isolated shared runner and publishes its own
+# complete result directory before aggregation. Shared GitHub runners are
+# noisy, so these numbers indicate relative ordering and regressions; the
+# medians published in README.md come from dedicated hardware. Raw result
+# directories and archives stay out of Git; maintainers may promote a
+# checksummed archive to a Release asset.
 
 on:
   workflow_dispatch:
@@ -16,6 +16,12 @@ on:
         description: Space-separated lanes to run
         required: false
         default: check-v1_0 check-v1_1 format-v1_0 format-v1_1
+      tomlsmith_ref:
+        description: >-
+          Git ref or commit of tomlsmith/tomlsmith to build the TomlSmith CLI from instead of the
+          pinned crates.io release (the version pin is relaxed for that build only)
+        required: false
+        default: ""
   schedule:
     - cron: "41 4 * * 1"
 
@@ -27,10 +33,88 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  prepare:
+    name: Validate benchmark lanes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.lanes.outputs.matrix }}
+      lane_names: ${{ steps.lanes.outputs.lane_names }}
+    steps:
+      - name: Validate and prepare lane matrix
+        id: lanes
+        env:
+          REQUESTED_LANES: ${{ inputs.lanes || 'check-v1_0 check-v1_1 format-v1_0 format-v1_1' }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+
+          catalog = {
+              "check-v1_0": {
+                  "operation": "check",
+                  "toml": "1.0",
+                  "fixture": "v1_0_medium",
+                  "filter": "e2e/check/cold-stdin/1.0/v1_0_medium",
+              },
+              "check-v1_1": {
+                  "operation": "check",
+                  "toml": "1.1",
+                  "fixture": "v1_1_medium",
+                  "filter": "e2e/check/cold-stdin/1.1/v1_1_medium",
+              },
+              "format-v1_0": {
+                  "operation": "format",
+                  "toml": "1.0",
+                  "fixture": "v1_0_medium",
+                  "filter": "e2e/format/cold-stdin/1.0/v1_0_medium",
+              },
+              "format-v1_1": {
+                  "operation": "format",
+                  "toml": "1.1",
+                  "fixture": "v1_1_medium",
+                  "filter": "e2e/format/cold-stdin/1.1/v1_1_medium",
+              },
+          }
+          lanes = os.environ["REQUESTED_LANES"].split()
+          if not lanes:
+              raise SystemExit("at least one benchmark lane must be selected")
+          unknown = [lane for lane in lanes if lane not in catalog]
+          if unknown:
+              expected = " ".join(catalog)
+              raise SystemExit(
+                  f"unknown benchmark lane(s): {' '.join(unknown)}; expected: {expected}"
+              )
+          duplicates = sorted({lane for lane in lanes if lanes.count(lane) > 1})
+          if duplicates:
+              raise SystemExit(f"duplicate benchmark lane(s): {' '.join(duplicates)}")
+
+          matrix = {
+              "include": [
+                  {"lane": lane, **catalog[lane]}
+                  for lane in lanes
+              ]
+          }
+          compact_matrix = json.dumps(matrix, separators=(",", ":"))
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              print(f"matrix={compact_matrix}", file=output)
+              print(f"lane_names={' '.join(lanes)}", file=output)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              print("## Selected benchmark lanes", file=summary)
+              print(file=summary)
+              for lane in lanes:
+                  print(f"- `{lane}` → `{catalog[lane]['filter']}`", file=summary)
+          PY
+
   e2e-benchmark:
-    name: End-to-end lanes
+    name: End-to-end (${{ matrix.lane }})
+    needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     steps:
       - name: Check out benchmark
         uses: actions/checkout@v7
@@ -38,15 +122,23 @@ jobs:
           path: tomlsmith-benchmark
 
       - name: Record benchmark inputs
+        env:
+          TOMLSMITH_REF: ${{ inputs.tomlsmith_ref }}
         run: |
           {
-            echo "## Benchmark inputs"
+            echo "## Benchmark input"
             echo
-            echo "- tomlsmith-cli crate: \`0.3.1\`"
+            echo "- lane: \`${{ matrix.lane }}\`"
+            echo "- filter: \`${{ matrix.filter }}\`"
+            if [[ -n "$TOMLSMITH_REF" ]]; then
+              echo "- tomlsmith-cli: built from git ref \`${TOMLSMITH_REF}\` (version pin relaxed)"
+            else
+              echo "- tomlsmith-cli crate: \`0.3.1\`"
+            fi
             echo "- tomlsmith-benchmark: \`$(git -C tomlsmith-benchmark rev-parse HEAD)\`"
             echo
-            echo "> Shared-runner numbers indicate relative ordering only;"
-            echo "> published README medians come from dedicated hardware."
+            echo "> This lane ran on its own shared runner. Shared-runner numbers"
+            echo "> are diagnostic only; published medians come from dedicated hardware."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Install pinned Rust toolchain
@@ -78,36 +170,139 @@ jobs:
         working-directory: tomlsmith-benchmark
         run: ./scripts/setup-products.sh
 
-      - name: Run benchmark lanes
+      - name: Build the TomlSmith CLI from the requested git ref
+        if: inputs.tomlsmith_ref != ''
+        env:
+          TOMLSMITH_REF: ${{ inputs.tomlsmith_ref }}
+        run: |
+          set -euo pipefail
+          cargo install tomlsmith-cli \
+            --git https://github.com/tomlsmith/tomlsmith \
+            --rev "$TOMLSMITH_REF" \
+            --locked \
+            --root "${RUNNER_TEMP}/tomlsmith-ref"
+          "${RUNNER_TEMP}/tomlsmith-ref/bin/tomlsmith" --version
+          {
+            echo "TOMLSMITH_BIN=${RUNNER_TEMP}/tomlsmith-ref/bin/tomlsmith"
+            echo "TOMLSMITH_BIN_EXPECTED_VERSION=any"
+          } >> "$GITHUB_ENV"
+
+      - name: Run exact benchmark lane
         working-directory: tomlsmith-benchmark
         env:
-          LANES: ${{ inputs.lanes || 'check-v1_0 check-v1_1 format-v1_0 format-v1_1' }}
+          TOMLSMITH_BENCH_FILTER: ${{ matrix.filter }}
+        # rust-cache exports CARGO_INCREMENTAL=0, but publishable benchmark
+        # metadata requires both Cargo incremental overrides to stay unset.
         run: |
-          for lane in $LANES; do
-            case "$lane" in
-              check-v1_0) filter="e2e/check/cold-stdin/1.0/v1_0_medium" ;;
-              check-v1_1) filter="e2e/check/cold-stdin/1.1/v1_1_medium" ;;
-              format-v1_0) filter="e2e/format/cold-stdin/1.0/v1_0_medium" ;;
-              format-v1_1) filter="e2e/format/cold-stdin/1.1/v1_1_medium" ;;
-              *) echo "unknown lane: $lane" >&2; exit 2 ;;
-            esac
-            TOMLSMITH_BENCH_FILTER="$filter" \
-              ./scripts/run-bench.sh "gha-${lane}-${{ github.run_id }}"
-          done
+          unset CARGO_INCREMENTAL CARGO_BUILD_INCREMENTAL
+          ./scripts/run-bench.sh "gha-${{ matrix.lane }}-${{ github.run_id }}"
 
       - name: Summarize lane medians
         working-directory: tomlsmith-benchmark
         run: |
           {
-            echo "## Lane results"
+            echo "## Lane result"
             echo
-            python3 scripts/summarize-results.py results/gha-*-${{ github.run_id }}
+            python3 scripts/summarize-results.py "results/gha-${{ matrix.lane }}-${{ github.run_id }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload full result directories
+      - name: Upload isolated lane result
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: benchmark-lane-${{ matrix.lane }}-${{ github.run_id }}
+          path: tomlsmith-benchmark/results/gha-${{ matrix.lane }}-${{ github.run_id }}/
+          retention-days: 90
+          if-no-files-found: error
+          overwrite: true
+
+  aggregate:
+    name: Aggregate benchmark lanes
+    needs: [prepare, e2e-benchmark]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out benchmark
+        uses: actions/checkout@v7
+        with:
+          path: tomlsmith-benchmark
+
+      - name: Prepare isolated download root
+        run: mkdir -p downloaded-results
+
+      - name: Download available lane artifacts without merging
+        continue-on-error: ${{ needs.e2e-benchmark.result != 'success' }}
+        uses: actions/download-artifact@v8
+        with:
+          pattern: benchmark-lane-*-${{ github.run_id }}
+          path: downloaded-results
+          merge-multiple: false
+
+      - name: Summarize available lane results
+        env:
+          MATRIX_RESULT: ${{ needs.e2e-benchmark.result }}
+          SELECTED_LANES: ${{ needs.prepare.outputs.lane_names }}
+        run: |
+          result_directories=()
+          while IFS= read -r -d '' environment_file; do
+            result_directory=$(dirname "$environment_file")
+            complete=true
+            for required_file in \
+              catalog.json criterion.log csv-files.txt environment.json \
+              peak-rss.json verification.json; do
+              if [[ ! -s "$result_directory/$required_file" ]]; then
+                echo "incomplete lane bundle: missing $result_directory/$required_file" >&2
+                complete=false
+              fi
+            done
+            if [[ -s "$result_directory/csv-files.txt" ]]; then
+              while IFS= read -r csv_file; do
+                if [[ ! -s "$result_directory/$csv_file" ]]; then
+                  echo "incomplete lane bundle: missing $result_directory/$csv_file" >&2
+                  complete=false
+                fi
+              done < "$result_directory/csv-files.txt"
+            fi
+            if [[ "$complete" == true ]]; then
+              result_directories+=("$result_directory")
+            fi
+          done < <(find downloaded-results -type f -name environment.json -print0 | sort -z)
+          read -r -a selected_lane_array <<< "$SELECTED_LANES"
+          expected_lane_count=${#selected_lane_array[@]}
+          {
+            echo "# Benchmark run ${GITHUB_RUN_ID}"
+            echo
+            echo "- selected lanes: \`${SELECTED_LANES}\`"
+            echo "- matrix result: \`${MATRIX_RESULT}\`"
+            echo "- expected lane artifacts: \`${expected_lane_count}\`"
+            echo "- complete lane artifacts: \`${#result_directories[@]}\`"
+            echo
+            echo "> Each table comes from an isolated shared runner. Do not treat"
+            echo "> cross-runner differences as a controlled public ranking."
+            echo
+          } > benchmark-summary.md
+          if (( ${#result_directories[@]} == 0 )); then
+            echo "No complete lane result was available for aggregation." >> benchmark-summary.md
+          else
+            python3 tomlsmith-benchmark/scripts/summarize-results.py \
+              "${result_directories[@]}" >> benchmark-summary.md
+          fi
+          cat benchmark-summary.md >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$MATRIX_RESULT" == success \
+            && ${#result_directories[@]} -ne $expected_lane_count ]]; then
+            echo "successful matrix produced ${#result_directories[@]} of ${expected_lane_count} expected lane artifacts" >&2
+            exit 1
+          fi
+
+      - name: Upload combined benchmark diagnostics
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: benchmark-results-${{ github.run_id }}
-          path: tomlsmith-benchmark/results/gha-*
+          path: |
+            benchmark-summary.md
+            downloaded-results/
           retention-days: 90
+          if-no-files-found: error
+          overwrite: true

@@ -19,6 +19,10 @@ pub const PRETTIER_PLUGIN_ENV: &str = "TOMLSMITH_PRETTIER_PLUGIN";
 pub const PRETTIER_PLUGIN_REQUIRED_VERSION: &str = "2.0.6";
 pub const GO_BINARY_ENV: &str = "TOMLSMITH_GO_BIN";
 pub const TIME_BINARY_ENV: &str = "TOMLSMITH_BENCH_TIME_COMMAND";
+/// Overrides the `TomlSmith` version pin for a locally built product executable: `any` accepts
+/// every version, another value replaces the pinned string. Published lanes leave it unset so
+/// results stay tied to the exact crates.io release.
+pub const TOMLSMITH_EXPECTED_VERSION_ENV: &str = "TOMLSMITH_BIN_EXPECTED_VERSION";
 pub const PROCESS_TIMEOUT_ENV: &str = "TOMLSMITH_BENCH_PROCESS_TIMEOUT_SECS";
 pub const DEFAULT_PROCESS_TIMEOUT_SECONDS: u64 = 120;
 pub const DPRINT_TOML_PLUGIN_URL: &str = "https://plugins.dprint.dev/toml-0.8.0.wasm";
@@ -365,10 +369,14 @@ impl ProductRunner {
             return Err(ProductProcessError::EmptyVersionOutput { product: product_id });
         }
         let detected_version = extract_version(&version_output);
-        if detected_version.as_deref() != Some(descriptor.required_version) {
+        let expected_version = expected_version(product_id, descriptor);
+        if expected_version
+            .as_deref()
+            .is_some_and(|expected| detected_version.as_deref() != Some(expected))
+        {
             return Err(ProductProcessError::VersionMismatch {
                 product: product_id,
-                required: descriptor.required_version,
+                required: expected_version.unwrap_or_default(),
                 detected: detected_version,
                 output: version_output,
             });
@@ -1114,7 +1122,7 @@ pub enum ProductProcessError {
     #[error("{product:?} requires exact version {required}, detected {detected:?} from: {output}")]
     VersionMismatch {
         product: ProductId,
-        required: &'static str,
+        required: String,
         detected: Option<String>,
         output: String,
     },
@@ -1245,6 +1253,19 @@ const fn descriptor(product_id: ProductId) -> ProductDescriptor {
         ProductId::Dprint => PRODUCT_CATALOG[4],
         ProductId::BurntSushiToml => PRODUCT_CATALOG[5],
         ProductId::GoTomlTomll => PRODUCT_CATALOG[6],
+    }
+}
+
+/// The version a probed executable must report: the catalog pin, unless the `TomlSmith` override
+/// environment selects another string or disables the check with `any`.
+fn expected_version(product_id: ProductId, descriptor: ProductDescriptor) -> Option<String> {
+    if product_id != ProductId::TomlSmith {
+        return Some(descriptor.required_version.to_owned());
+    }
+    match std::env::var(TOMLSMITH_EXPECTED_VERSION_ENV) {
+        Ok(value) if value.trim().eq_ignore_ascii_case("any") => None,
+        Ok(value) if !value.trim().is_empty() => Some(value.trim().to_owned()),
+        _ => Some(descriptor.required_version.to_owned()),
     }
 }
 

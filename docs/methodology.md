@@ -24,7 +24,7 @@ Stable product IDs have the shape `e2e/<operation>/cold-stdin/<toml-version>/<fi
 
 Canonical runs use `scripts/run-bench.sh`, one exact lane per run ID, a 3-second warm-up, a 5-second Criterion measurement window, and 30 samples unless the published bundle records different settings. Timed iterations use the direct product spawn path without process-group setup so timeout containment does not become benchmarked product latency; the bounded correctness and preflight call must pass immediately before the timed loop. Throughput is calculated from exact input bytes.
 
-Shared CI runners are smoke and regression signals, not headline ranking hardware. Publishable tables require dedicated hardware, repeated sessions, and uncertainty reporting. Differences inside observed session drift must not be described as a stable ordering.
+Shared CI runners are smoke and regression signals, not headline ranking hardware. The scheduled and manually dispatched full benchmark validates the selected canonical lanes, runs every lane in a separate matrix job, and aggregates their complete result bundles without merging files from different runners. This lane isolation reduces workflow wall time and prevents one lane from contaminating another, but it does not turn cross-runner measurements into a controlled concurrent comparison. Publishable tables require dedicated hardware, repeated sessions, and uncertainty reporting. Differences inside observed session drift must not be described as a stable ordering.
 
 ## Peak memory
 
