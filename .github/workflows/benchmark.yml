@@ -133,7 +133,7 @@ jobs:
             if [[ -n "$TOMLSMITH_REF" ]]; then
               echo "- tomlsmith-cli: built from git ref \`${TOMLSMITH_REF}\` (version pin relaxed)"
             else
-              echo "- tomlsmith-cli crate: \`0.3.1\`"
+              echo "- tomlsmith-cli crate: \`0.4.0\`"
             fi
             echo "- tomlsmith-benchmark: \`$(git -C tomlsmith-benchmark rev-parse HEAD)\`"
             echo
