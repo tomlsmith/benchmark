@@ -50,9 +50,9 @@ The format scenario uses the same documents in an intentionally edited layout. R
 | Product | Median (ms) | Session range (ms) | MiB/s | Peak RSS (MiB) |
 | --- | ---: | ---: | ---: | ---: |
 | pelletier/go-toml `tomll`* | 7.74 | 6.58–7.74 | 16.17 | 6.84 |
-| TomlSmith native CLI | 8.04 | 7.81–8.78 | 15.57 | 7.62 |
+| TomlSmith native CLI | 8.04 | 7.81–8.78 | 15.57 | 7.63 |
 | dprint + TOML plugin | 15.64 | 14.58–15.64 | 8.00 | 19.75 |
-| Tombi | 626.94 | 626.94–689.98 | 0.20 | 31.62 |
+| Tombi | 626.94 | 626.94–689.98 | 0.20 | 31.63 |
 
 ![Format: median latency and peak RSS](assets/format-results-20261023.svg)
 

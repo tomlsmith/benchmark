@@ -50,9 +50,9 @@ TomlSmith Benchmark 测量 TOML 检查与格式化 CLI 的端到端冷启动延�
 | 产品 | 中位数 (ms) | 三次会话范围 (ms) | MiB/s | Peak RSS (MiB) |
 | --- | ---: | ---: | ---: | ---: |
 | pelletier/go-toml `tomll`* | 7.74 | 6.58–7.74 | 16.17 | 6.84 |
-| TomlSmith native CLI | 8.04 | 7.81–8.78 | 15.57 | 7.62 |
+| TomlSmith native CLI | 8.04 | 7.81–8.78 | 15.57 | 7.63 |
 | dprint + TOML plugin | 15.64 | 14.58–15.64 | 8.00 | 19.75 |
-| Tombi | 626.94 | 626.94–689.98 | 0.20 | 31.62 |
+| Tombi | 626.94 | 626.94–689.98 | 0.20 | 31.63 |
 
 ![Format: median latency and peak RSS](assets/format-results-20261023.svg)
 
