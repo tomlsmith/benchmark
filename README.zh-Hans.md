@@ -9,78 +9,58 @@ TomlSmith Benchmark 测量 TOML 检查与格式化 CLI 的端到端冷启动延�
 <!-- BENCHMARK_RESULTS_START -->
 ## Check
 
-Check 场景使用确定性生成的合成文档，覆盖已发布的 TOML 1.0.0 与 TOML 1.1.0 语法。表格只展示能够按所选版本接受文档的产品与版本组合。
-
-<table>
-<tr>
-<td valign="top">
+检查场景使用覆盖 TOML 1.0.0 与 TOML 1.1.0 已发布语法的确定性合成文档，只展示能在所选版本下接受文档的产品与版本组合。
 
 **TOML 1.0 · `v1_0_medium`**
 
-| 产品 | 中位延迟（ms） | MiB/s | Peak RSS（MiB） |
-| --- | ---: | ---: | ---: |
-| TomlSmith 原生 CLI | 10.21🥇 | 12.26🥇 | 6.98🥇 |
-| BurntSushi/toml `tomlv` | 12.07🥈 | 10.37🥈 | 8.97🥈 |
-| Taplo CLI | 23.34🥉 | 5.36🥉 | 18.59🥉 |
-| Tombi | 206.80 | 0.61 | 27.25 |
-
-</td>
-<td valign="top">
+| 产品 | 中位数 (ms) | 三次会话范围 (ms) | MiB/s | Peak RSS (MiB) |
+| --- | ---: | ---: | ---: | ---: |
+| TomlSmith native CLI | 7.65 | 7.65–8.51 | 16.35 | 7.53 |
+| BurntSushi/toml `tomlv` | 9.85 | 9.85–10.35 | 12.71 | 9.30 |
+| Taplo CLI | 18.55 | 18.54–18.96 | 6.74 | 19.02 |
+| Tombi | 173.20 | 173.20–183.09 | 0.72 | 26.88 |
 
 **TOML 1.1 · `v1_1_medium`**
 
-| 产品 | 中位延迟（ms） | MiB/s | Peak RSS（MiB） |
-| --- | ---: | ---: | ---: |
-| TomlSmith 原生 CLI | 8.17🥇 | 15.33🥇 | 6.95🥇 |
-| BurntSushi/toml `tomlv` | 10.07🥈 | 12.43🥈 | 8.89🥈 |
-| Tombi | 193.31🥉 | 0.65🥉 | 27.28🥉 |
+| 产品 | 中位数 (ms) | 三次会话范围 (ms) | MiB/s | Peak RSS (MiB) |
+| --- | ---: | ---: | ---: | ---: |
+| TomlSmith native CLI | 8.69 | 8.51–8.69 | 14.42 | 7.56 |
+| BurntSushi/toml `tomlv` | 10.22 | 9.96–10.40 | 12.25 | 9.27 |
+| Tombi | 171.63 | 171.63–184.62 | 0.73 | 26.86 |
 
-</td>
-</tr>
-</table>
-
-![TOML 1.0 与 1.1 Check 延迟和 Peak RSS](assets/check-results-20260903.svg)
+![Check: median latency and peak RSS](assets/check-results-20261023.svg)
 
 ## Format
 
-Format 场景使用相同文档，并采用刻意保留编辑痕迹的排版。只有输出能够按所选版本重新解析、保持解码内容不变且第二次格式化结果不变的产品才会进入表格。
-
-<table>
-<tr>
-<td valign="top">
+格式化场景使用相同文档，并刻意调整初始布局。结果要求输出能按所选版本重新解析、保持解码内容不变，且第二次格式化不再变化。
 
 **TOML 1.0 · `v1_0_medium`**
 
-| 产品 | 中位延迟（ms） | MiB/s | Peak RSS（MiB） |
-| --- | ---: | ---: | ---: |
-| TomlSmith 原生 CLI | 8.35🥇 | 14.99🥇 | 6.95🥈 |
-| pelletier/go-toml `tomll`* | 10.91🥈 | 11.47🥈 | 6.45🥇 |
-| dprint + TOML plugin | 20.12🥉 | 6.22🥉 | 19.94 |
-| Taplo CLI | 22.07 | 5.67 | 18.77🥉 |
-| Tombi | 655.14 | 0.19 | 31.86 |
-| Prettier + prettier-plugin-toml | 678.41 | 0.18 | 594.09 |
-
-</td>
-<td valign="top">
+| 产品 | 中位数 (ms) | 三次会话范围 (ms) | MiB/s | Peak RSS (MiB) |
+| --- | ---: | ---: | ---: | ---: |
+| pelletier/go-toml `tomll`* | 7.62 | 7.27–7.62 | 16.42 | 6.77 |
+| TomlSmith native CLI | 8.16 | 8.15–9.68 | 15.33 | 7.56 |
+| dprint + TOML plugin | 14.83 | 14.83–15.39 | 8.44 | 19.77 |
+| Taplo CLI | 21.82 | 21.82–26.17 | 5.73 | 19.58 |
+| Tombi | 619.48 | 613.23–619.48 | 0.20 | 31.31 |
+| Prettier + prettier-plugin-toml | 687.96 | 682.12–703.69 | 0.18 | 564.73 |
 
 **TOML 1.1 · `v1_1_medium`**
 
-| 产品 | 中位延迟（ms） | MiB/s | Peak RSS（MiB） |
-| --- | ---: | ---: | ---: |
-| TomlSmith 原生 CLI | 8.36🥇 | 14.97🥇 | 7.02🥈 |
-| pelletier/go-toml `tomll`* | 9.87🥈 | 12.68🥈 | 6.56🥇 |
-| dprint + TOML plugin | 18.99🥉 | 6.59🥉 | 19.94🥉 |
-| Tombi | 721.46 | 0.17 | 31.55 |
+| 产品 | 中位数 (ms) | 三次会话范围 (ms) | MiB/s | Peak RSS (MiB) |
+| --- | ---: | ---: | ---: | ---: |
+| pelletier/go-toml `tomll`* | 7.74 | 6.58–7.74 | 16.17 | 6.84 |
+| TomlSmith native CLI | 8.04 | 7.81–8.78 | 15.57 | 7.62 |
+| dprint + TOML plugin | 15.64 | 14.58–15.64 | 8.00 | 19.75 |
+| Tombi | 626.94 | 626.94–689.98 | 0.20 | 31.62 |
 
-</td>
-</tr>
-</table>
+![Format: median latency and peak RSS](assets/format-results-20261023.svg)
 
-![TOML 1.0 与 1.1 Format 延迟和 Peak RSS](assets/format-results-20260903.svg)
+\* `tomll` 会丢弃注释并改写字面量，完成的工作少于保留注释的格式化器。
 
-\* 正确性检查比较解码后的 TOML 内容，不比较注释与排版。`tomll` 会重新解析并写出数据，同时丢弃注释、改变字面量写法；其他格式化器会保留注释，因此这些行完成的工作并不完全相同。
+本次数据于 2026-10-23 在 Apple M4 Pro、macOS 27.2 上顺序测得，使用正式发布的 TomlSmith 0.4.1 和 Rust 1.92.0。每条赛道执行三次独立会话，每次预热 3 秒、测量窗口 5 秒、30 个样本，并另取 3 次新进程 Peak RSS。主表与图表采用测量前指定的第二次会话；范围列为三次会话中位数的最小值至最大值，并非置信区间。范围重叠或差异处于会话波动内时，不应解读为稳定排名。
 
-这四条标准赛道与 [tomlsmith.github.io](https://tomlsmith.github.io/) 展示的是同一份数据。Git 只保存生成后的表格与图表；原始运行目录和归档包明确忽略。需要分发时，应将它们作为带校验和的 GitHub Release 资产发布，而不是提交到源码历史。
+双语表格、图表和[官网](https://tomlsmith.github.io/)共用这些数据。[机器可读摘要](assets/benchmark-data-20261023.json)记录全部会话、产品版本和原始文件校验值；完整结果目录保存在本地 `results/`，不加入 Git。
 <!-- BENCHMARK_RESULTS_END -->
 
 ## 本地运行

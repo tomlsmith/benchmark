@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="610" viewBox="0 0 1200 610" role="img" aria-labelledby="title desc">
+  <title id="title">TomlSmith benchmark check results</title>
+  <desc id="desc">Bar chart of cold CLI check median latency (logarithmic axis) with peak RSS for separate synthetic TOML 1.0 and TOML 1.1 documents.</desc>
+  <rect width="1200" height="610" fill="#f5f7fa"/>
+  <text x="30" y="46" fill="#17324d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="700">Check</text>
+  <text x="30" y="76" fill="#60758a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="15">Cold CLI · median latency on a logarithmic axis · lower is better</text>
+  <text x="1170" y="76" fill="#60758a" font-family="ui-monospace, SFMono-Regular, monospace" font-size="13" text-anchor="end">bar top: median ms · below name: Peak RSS</text>
+
+  <rect x="28" y="106" width="554" height="440" rx="16" fill="#ffffff" stroke="#d8e1ea"/>
+  <text x="48" y="145" fill="#2563eb" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700">TOML 1.0</text>
+  <text x="48" y="171" fill="#60758a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">v1_0_medium</text>
+  <g stroke-width="1">
+    <line x1="90" y1="470.0" x2="560" y2="470.0" stroke="#d8e1ea"/>
+    <line x1="90" y1="383.3" x2="560" y2="383.3" stroke="#e5ebf1"/>
+    <line x1="90" y1="296.7" x2="560" y2="296.7" stroke="#e5ebf1"/>
+    <line x1="90" y1="210.0" x2="560" y2="210.0" stroke="#e5ebf1"/>
+  </g>
+  <g fill="#8796a5" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" text-anchor="end">
+    <text x="82" y="474.0">1</text>
+    <text x="82" y="387.3">10</text>
+    <text x="82" y="300.7">100</text>
+    <text x="82" y="214.0">1k ms</text>
+  </g>
+  <g>
+    <path d="M120.8,470 L120.8,397.4 Q120.8,393.4 124.8,393.4 L172.8,393.4 Q176.8,393.4 176.8,397.4 L176.8,470 Z" fill="#2563eb"/>
+    <path d="M238.2,470 L238.2,387.9 Q238.2,383.9 242.2,383.9 L290.2,383.9 Q294.2,383.9 294.2,387.9 L294.2,470 Z" fill="#64748b"/>
+    <path d="M355.8,470 L355.8,364.1 Q355.8,360.1 359.8,360.1 L407.8,360.1 Q411.8,360.1 411.8,364.1 L411.8,470 Z" fill="#64748b"/>
+    <path d="M473.2,470 L473.2,280.0 Q473.2,276.0 477.2,276.0 L525.2,276.0 Q529.2,276.0 529.2,280.0 L529.2,470 Z" fill="#64748b"/>
+  </g>
+  <g fill="#17324d" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" text-anchor="middle">
+    <text x="148.8" y="385.4">7.7</text>
+    <text x="266.2" y="375.9">9.8</text>
+    <text x="383.8" y="352.1">18.6</text>
+    <text x="501.2" y="268.0">173</text>
+  </g>
+  <g fill="#17324d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" text-anchor="middle">
+    <text x="148.8" y="492" font-weight="700">TomlSmith</text>
+    <text x="266.2" y="492">BurntSushi</text>
+    <text x="383.8" y="492">Taplo</text>
+    <text x="501.2" y="492">Tombi</text>
+  </g>
+  <g fill="#8796a5" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" text-anchor="middle">
+    <text x="148.8" y="510">7.5 MiB</text>
+    <text x="266.2" y="510">9.3 MiB</text>
+    <text x="383.8" y="510">19.0 MiB</text>
+    <text x="501.2" y="510">26.9 MiB</text>
+  </g>
+
+  <rect x="618" y="106" width="554" height="440" rx="16" fill="#ffffff" stroke="#d8e1ea"/>
+  <text x="638" y="145" fill="#e7652e" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700">TOML 1.1</text>
+  <text x="638" y="171" fill="#60758a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">v1_1_medium</text>
+  <g stroke-width="1">
+    <line x1="680" y1="470.0" x2="1150" y2="470.0" stroke="#d8e1ea"/>
+    <line x1="680" y1="383.3" x2="1150" y2="383.3" stroke="#e5ebf1"/>
+    <line x1="680" y1="296.7" x2="1150" y2="296.7" stroke="#e5ebf1"/>
+    <line x1="680" y1="210.0" x2="1150" y2="210.0" stroke="#e5ebf1"/>
+  </g>
+  <g fill="#8796a5" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" text-anchor="end">
+    <text x="672" y="474.0">1</text>
+    <text x="672" y="387.3">10</text>
+    <text x="672" y="300.7">100</text>
+    <text x="672" y="214.0">1k ms</text>
+  </g>
+  <g>
+    <path d="M730.3,470 L730.3,392.6 Q730.3,388.6 734.3,388.6 L782.3,388.6 Q786.3,388.6 786.3,392.6 L786.3,470 Z" fill="#e7652e"/>
+    <path d="M887.0,470 L887.0,386.5 Q887.0,382.5 891.0,382.5 L939.0,382.5 Q943.0,382.5 943.0,386.5 L943.0,470 Z" fill="#64748b"/>
+    <path d="M1043.7,470 L1043.7,280.3 Q1043.7,276.3 1047.7,276.3 L1095.7,276.3 Q1099.7,276.3 1099.7,280.3 L1099.7,470 Z" fill="#64748b"/>
+  </g>
+  <g fill="#17324d" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" text-anchor="middle">
+    <text x="758.3" y="380.6">8.7</text>
+    <text x="915.0" y="374.5">10.2</text>
+    <text x="1071.7" y="268.3">172</text>
+  </g>
+  <g fill="#17324d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" text-anchor="middle">
+    <text x="758.3" y="492" font-weight="700">TomlSmith</text>
+    <text x="915.0" y="492">BurntSushi</text>
+    <text x="1071.7" y="492">Tombi</text>
+  </g>
+  <g fill="#8796a5" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" text-anchor="middle">
+    <text x="758.3" y="510">7.6 MiB</text>
+    <text x="915.0" y="510">9.3 MiB</text>
+    <text x="1071.7" y="510">26.9 MiB</text>
+  </g>
+</svg>

@@ -11,76 +11,56 @@ TomlSmith Benchmark measures end-to-end cold-start latency, throughput, and peak
 
 The check scenario uses deterministic synthetic documents covering the published TOML 1.0.0 and TOML 1.1.0 grammars. Only product/version pairs that accept the document under the selected version are shown.
 
-<table>
-<tr>
-<td valign="top">
-
 **TOML 1.0 · `v1_0_medium`**
 
-| Product | Median (ms) | MiB/s | Peak RSS (MiB) |
-| --- | ---: | ---: | ---: |
-| TomlSmith native CLI | 10.21🥇 | 12.26🥇 | 6.98🥇 |
-| BurntSushi/toml `tomlv` | 12.07🥈 | 10.37🥈 | 8.97🥈 |
-| Taplo CLI | 23.34🥉 | 5.36🥉 | 18.59🥉 |
-| Tombi | 206.80 | 0.61 | 27.25 |
-
-</td>
-<td valign="top">
+| Product | Median (ms) | Session range (ms) | MiB/s | Peak RSS (MiB) |
+| --- | ---: | ---: | ---: | ---: |
+| TomlSmith native CLI | 7.65 | 7.65–8.51 | 16.35 | 7.53 |
+| BurntSushi/toml `tomlv` | 9.85 | 9.85–10.35 | 12.71 | 9.30 |
+| Taplo CLI | 18.55 | 18.54–18.96 | 6.74 | 19.02 |
+| Tombi | 173.20 | 173.20–183.09 | 0.72 | 26.88 |
 
 **TOML 1.1 · `v1_1_medium`**
 
-| Product | Median (ms) | MiB/s | Peak RSS (MiB) |
-| --- | ---: | ---: | ---: |
-| TomlSmith native CLI | 8.17🥇 | 15.33🥇 | 6.95🥇 |
-| BurntSushi/toml `tomlv` | 10.07🥈 | 12.43🥈 | 8.89🥈 |
-| Tombi | 193.31🥉 | 0.65🥉 | 27.28🥉 |
+| Product | Median (ms) | Session range (ms) | MiB/s | Peak RSS (MiB) |
+| --- | ---: | ---: | ---: | ---: |
+| TomlSmith native CLI | 8.69 | 8.51–8.69 | 14.42 | 7.56 |
+| BurntSushi/toml `tomlv` | 10.22 | 9.96–10.40 | 12.25 | 9.27 |
+| Tombi | 171.63 | 171.63–184.62 | 0.73 | 26.86 |
 
-</td>
-</tr>
-</table>
-
-![Check latency and peak RSS for TOML 1.0 and 1.1](assets/check-results-20260903.svg)
+![Check: median latency and peak RSS](assets/check-results-20261023.svg)
 
 ## Format
 
-The format scenario uses the same documents in an intentionally edited layout. A result is included only when the output reparses under the selected version, preserves decoded content, and is unchanged by a second format pass.
-
-<table>
-<tr>
-<td valign="top">
+The format scenario uses the same documents in an intentionally edited layout. Results require output that reparses under the selected version, preserves decoded content, and is unchanged by a second format pass.
 
 **TOML 1.0 · `v1_0_medium`**
 
-| Product | Median (ms) | MiB/s | Peak RSS (MiB) |
-| --- | ---: | ---: | ---: |
-| TomlSmith native CLI | 8.35🥇 | 14.99🥇 | 6.95🥈 |
-| pelletier/go-toml `tomll`* | 10.91🥈 | 11.47🥈 | 6.45🥇 |
-| dprint + TOML plugin | 20.12🥉 | 6.22🥉 | 19.94 |
-| Taplo CLI | 22.07 | 5.67 | 18.77🥉 |
-| Tombi | 655.14 | 0.19 | 31.86 |
-| Prettier + prettier-plugin-toml | 678.41 | 0.18 | 594.09 |
-
-</td>
-<td valign="top">
+| Product | Median (ms) | Session range (ms) | MiB/s | Peak RSS (MiB) |
+| --- | ---: | ---: | ---: | ---: |
+| pelletier/go-toml `tomll`* | 7.62 | 7.27–7.62 | 16.42 | 6.77 |
+| TomlSmith native CLI | 8.16 | 8.15–9.68 | 15.33 | 7.56 |
+| dprint + TOML plugin | 14.83 | 14.83–15.39 | 8.44 | 19.77 |
+| Taplo CLI | 21.82 | 21.82–26.17 | 5.73 | 19.58 |
+| Tombi | 619.48 | 613.23–619.48 | 0.20 | 31.31 |
+| Prettier + prettier-plugin-toml | 687.96 | 682.12–703.69 | 0.18 | 564.73 |
 
 **TOML 1.1 · `v1_1_medium`**
 
-| Product | Median (ms) | MiB/s | Peak RSS (MiB) |
-| --- | ---: | ---: | ---: |
-| TomlSmith native CLI | 8.36🥇 | 14.97🥇 | 7.02🥈 |
-| pelletier/go-toml `tomll`* | 9.87🥈 | 12.68🥈 | 6.56🥇 |
-| dprint + TOML plugin | 18.99🥉 | 6.59🥉 | 19.94🥉 |
-| Tombi | 721.46 | 0.17 | 31.55 |
+| Product | Median (ms) | Session range (ms) | MiB/s | Peak RSS (MiB) |
+| --- | ---: | ---: | ---: | ---: |
+| pelletier/go-toml `tomll`* | 7.74 | 6.58–7.74 | 16.17 | 6.84 |
+| TomlSmith native CLI | 8.04 | 7.81–8.78 | 15.57 | 7.62 |
+| dprint + TOML plugin | 15.64 | 14.58–15.64 | 8.00 | 19.75 |
+| Tombi | 626.94 | 626.94–689.98 | 0.20 | 31.62 |
 
-</td>
-</tr>
-</table>
+![Format: median latency and peak RSS](assets/format-results-20261023.svg)
 
-![Format latency and peak RSS for TOML 1.0 and 1.1](assets/format-results-20260903.svg)
+\* `tomll` discards comments and rewrites literal styles, so it performs less work than the comment-preserving formatters.
 
-\* The correctness check compares decoded TOML content, not comments or layout. `tomll` reparses and writes the data, discarding comments and changing literal styles. The other formatters preserve comments, so these rows do not represent identical work.
+Measured sequentially on 2026-10-23 on Apple M4 Pro, macOS 27.2, using published TomlSmith 0.4.1 and Rust 1.92.0. Each lane ran in three separate sessions with a 3-second warm-up, a 5-second measurement window, 30 samples, and three additional fresh-process Peak RSS samples per session. Tables and charts use session 2, selected before measurement; the range is the minimum and maximum of the three session medians, not a confidence interval. Overlapping ranges or differences within session drift do not establish a stable ordering.
 
-These are the same four canonical results published on [tomlsmith.github.io](https://tomlsmith.github.io/). Git stores only the generated tables and charts. Raw run directories and archives are intentionally ignored; if they need to be distributed, publish them as checksummed GitHub Release assets rather than source files.
+Both README translations, charts, and the [website](https://tomlsmith.github.io/) share these measurements. The [machine-readable summary](assets/benchmark-data-20261023.json) records every session, product version, and raw-file checksum; complete result directories remain local under `results/` and are excluded from Git.
 <!-- BENCHMARK_RESULTS_END -->
 
 ## Run locally
