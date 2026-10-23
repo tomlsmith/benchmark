@@ -23,8 +23,11 @@ fn main() {
     if child {
         let started = Instant::now();
         while started.elapsed() < Duration::from_secs(30) {
-            fs::write(format!("{state}/heartbeat"), started.elapsed().as_nanos().to_string())
+            // SIGKILL may arrive between truncating and writing a file. Publish atomically so
+            // the last completed heartbeat remains observable after successful termination.
+            fs::write(format!("{state}/heartbeat-next"), started.elapsed().as_nanos().to_string())
                 .unwrap();
+            fs::rename(format!("{state}/heartbeat-next"), format!("{state}/heartbeat")).unwrap();
             thread::sleep(Duration::from_millis(10));
         }
         return;
