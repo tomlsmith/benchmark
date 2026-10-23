@@ -190,7 +190,7 @@ test.runIf(process.platform === "linux")("retries a transient executable write l
     await expect(probeProduct("once")).rejects.toMatchObject({ code: 1, stderr: expect.stringContaining("Text file busy") });
     const probed = probeProduct();
     release = delay(150).then(() => handle.close());
-    await expect(probed).resolves.toBe("tomlsmith 0.4.0");
+    await expect(probed).resolves.toBe("tomlsmith 0.4.1");
   } finally {
     if (release) await release;
     else await handle.close();

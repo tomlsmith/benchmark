@@ -13,7 +13,7 @@ use std::os::unix::process::CommandExt;
 
 fn main() {
     if env::args().any(|argument| argument == "--version") {
-        println!("tomlsmith 0.4.0");
+        println!("tomlsmith 0.4.1");
         return;
     }
     let state = env::var("TOMLSMITH_TEST_STATE").unwrap();
