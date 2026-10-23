@@ -4,14 +4,15 @@ Thank you for improving TomlSmith Benchmark. Keep changes reproducible, verify c
 
 ## Setup
 
-Install the exact published TomlSmith CLI and pinned competitor CLIs, then run the pull-request gate:
+Install Node.js 24 and pnpm 11.22.0 for the Vitest process regressions, then install the exact published TomlSmith CLI and pinned competitor CLIs and run the pull-request gate:
 
 ```bash
+pnpm install --frozen-lockfile
 ./scripts/setup-products.sh
 ./scripts/check.sh
 ```
 
-The pull-request gate verifies the direct TomlSmith CLI on one small lane in addition to formatting, tests, Clippy, and corpus checks. Before changing product adapters or publishing measurements, run the slower cross-product verification:
+The pull-request gate verifies the direct TomlSmith CLI on one small lane in addition to formatting, tests, Clippy, and corpus checks. `pnpm test` runs the Vitest process regressions against the real benchmark CLI and a portable product double compiled into a temporary directory; the test assertions remain in TypeScript. New systematic regression tests use Vitest rather than standalone JavaScript scripts or additional Rust test suites. Before changing product adapters or publishing measurements, run the slower cross-product verification:
 
 ```bash
 ./scripts/check-products.sh

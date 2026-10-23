@@ -2,11 +2,11 @@ use std::{
     fs,
     io::{Read, Write},
     path::{Path, PathBuf},
-    process::{Command, Stdio},
-    time::Duration,
+    process::{Command, ExitStatus, Stdio},
+    time::{Duration, Instant},
 };
 
-use command_group::CommandGroup;
+use command_group::{CommandGroup, GroupChild};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use wait_timeout::ChildExt;
@@ -743,6 +743,7 @@ impl ProductRunner {
         isolation_directory: &Path,
         spawn_path: &Path,
     ) -> Result<ProductProcessOutput, ProductProcessError> {
+        let started = Instant::now();
         command.stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
         let mut child = command.group_spawn().map_err(|source| ProductProcessError::Spawn {
             product: self.product_id(),
@@ -763,40 +764,45 @@ impl ProductRunner {
             stream: "stderr",
         })?;
 
-        let (status, writer_result, stdout_result, stderr_result) = std::thread::scope(|scope| {
-            let writer = scope.spawn(move || {
-                let mut stdin = stdin;
-                stdin.write_all(source.as_bytes())
-            });
-            let stdout_reader = scope.spawn(move || read_stream(stdout));
-            let stderr_reader = scope.spawn(move || read_stream(stderr));
-            let status = match child.inner().wait_timeout(self.process_timeout) {
-                Ok(Some(status)) => Ok(Some(status)),
-                Ok(None) => {
-                    child.kill().and_then(|()| child.wait()).map(|_| None).map_err(|source| {
-                        ProductProcessError::TerminateTimedOut {
-                            product: self.product_id(),
-                            source,
-                        }
-                    })
-                }
-                Err(source) => {
-                    Err(ProductProcessError::Wait { product: self.product_id(), source })
-                }
-            };
-            let writer_result = writer
-                .join()
-                .map_err(|_| ProductProcessError::WriterPanicked { product: self.product_id() });
-            let stdout_result = stdout_reader.join().map_err(|_| {
-                ProductProcessError::ReaderPanicked { product: self.product_id(), stream: "stdout" }
-            });
-            let stderr_result = stderr_reader.join().map_err(|_| {
-                ProductProcessError::ReaderPanicked { product: self.product_id(), stream: "stderr" }
-            });
-            (status, writer_result, stdout_result, stderr_result)
+        // Own the input so a failed OS-level cleanup cannot force an unbounded scoped-thread
+        // join. The direct Criterion path above still borrows its input without this copy.
+        let input = source.as_bytes().to_owned();
+        let writer = std::thread::spawn(move || {
+            let mut stdin = stdin;
+            stdin.write_all(&input)
+        });
+        let stdout_reader = std::thread::spawn(move || read_stream(stdout));
+        let stderr_reader = std::thread::spawn(move || read_stream(stderr));
+        let io_finished =
+            || writer.is_finished() && stdout_reader.is_finished() && stderr_reader.is_finished();
+        let status =
+            wait_for_process_and_io(&mut child, started, self.process_timeout, io_finished);
+        if !matches!(status, Ok(Some(_))) {
+            // The group/job handle remains usable after its leader exits. Kill it even when only
+            // a descendant's inherited pipe is preventing completion, then reap and drain within
+            // a separate bounded cleanup allowance. Never join a still-blocked worker.
+            if let Err(source) = terminate_and_drain(&mut child, io_finished) {
+                reap_in_background(child);
+                return Err(ProductProcessError::TerminateTimedOut {
+                    product: self.product_id(),
+                    source,
+                });
+            }
+        }
+        let writer_result = writer
+            .join()
+            .map_err(|_| ProductProcessError::WriterPanicked { product: self.product_id() });
+        let stdout_result = stdout_reader.join().map_err(|_| ProductProcessError::ReaderPanicked {
+            product: self.product_id(),
+            stream: "stdout",
+        });
+        let stderr_result = stderr_reader.join().map_err(|_| ProductProcessError::ReaderPanicked {
+            product: self.product_id(),
+            stream: "stderr",
         });
 
-        let status = status?;
+        let status = status
+            .map_err(|source| ProductProcessError::Wait { product: self.product_id(), source })?;
         let stdout = stdout_result?.map_err(|source| ProductProcessError::ReadOutput {
             product: self.product_id(),
             stream: "stdout",
@@ -1212,6 +1218,51 @@ fn read_stream(mut stream: impl Read) -> std::io::Result<Vec<u8>> {
     let mut output = Vec::new();
     stream.read_to_end(&mut output)?;
     Ok(output)
+}
+
+/// Uses one deadline for process exit, stdin completion, and both output EOFs. A successful
+/// leader exit alone does not prove completion: descendants may still own any of the pipes.
+fn wait_for_process_and_io(
+    child: &mut GroupChild,
+    started: Instant,
+    timeout: Duration,
+    io_finished: impl Fn() -> bool,
+) -> std::io::Result<Option<ExitStatus>> {
+    let Some(status) = child.inner().wait_timeout(timeout.saturating_sub(started.elapsed()))?
+    else {
+        return Ok(None);
+    };
+    while !io_finished() {
+        let remaining = timeout.saturating_sub(started.elapsed());
+        if remaining.is_zero() {
+            return Ok(None);
+        }
+        std::thread::sleep(remaining.min(Duration::from_millis(1)));
+    }
+    Ok((started.elapsed() <= timeout).then_some(status))
+}
+
+fn terminate_and_drain(
+    child: &mut GroupChild,
+    io_finished: impl Fn() -> bool,
+) -> std::io::Result<()> {
+    let started = Instant::now();
+    child.kill()?;
+    if wait_for_process_and_io(child, started, Duration::from_millis(250), io_finished)?.is_none() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::TimedOut,
+            "process or standard streams did not close within 250 ms after group termination",
+        ));
+    }
+    Ok(())
+}
+
+fn reap_in_background(mut child: GroupChild) {
+    // An OS-level termination failure must be reported promptly, without abandoning the duty to
+    // reap the direct child if it exits later. Ordinary successful cleanup joins every worker.
+    std::thread::spawn(move || {
+        let _ = child.wait();
+    });
 }
 
 fn configured_process_timeout(product: ProductId) -> Result<Duration, ProductProcessError> {

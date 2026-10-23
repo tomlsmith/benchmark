@@ -111,9 +111,10 @@ The manually dispatched `Benchmark` workflow accepts a `tomlsmith_ref` input to 
 
 Correctness, preflight, and resource-sampling process trees are bounded by `TOMLSMITH_BENCH_PROCESS_TIMEOUT_SECS` (120 seconds by default). The cross-product gate covers the four canonical medium-fixture publication lanes, while every other selected lane—including large and stress fixtures—must pass its own bounded preflight before timing. Timed iterations use the direct spawn path after that preflight so containment overhead is not counted as product latency. See the complete [measurement methodology](docs/methodology.md).
 
-Run the pull-request gate with:
+Run the pull-request gate with Node.js 24 and pnpm 11.22.0 available:
 
 ```bash
+pnpm install --frozen-lockfile
 ./scripts/check.sh
 ```
 

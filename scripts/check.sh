@@ -20,6 +20,7 @@ unset TOMLSMITH_BURNTSUSHI_TOMLV_BIN TOMLSMITH_GO_TOMLL_BIN
 TOMLSMITH_BENCH_FILTER=e2e/check/cold-stdin/1.0/v1_0_small \
   "$cargo_command" run --locked --quiet -p tomlsmith-benchmark-cli -- --root "$repo_root" verify
 "$cargo_command" test --workspace --locked
+pnpm test
 "$cargo_command" clippy --workspace --all-targets --all-features --locked -- -D warnings
 TOMLSMITH_BENCH_WARMUP_SECS=0.05 \
 TOMLSMITH_BENCH_MEASUREMENT_SECS=0.05 \

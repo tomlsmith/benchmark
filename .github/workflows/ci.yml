@@ -80,6 +80,36 @@ jobs:
         working-directory: tomlsmith-benchmark
         run: cargo test --workspace --locked
 
+  process-regressions:
+    name: Process regressions (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Check out benchmark
+        uses: actions/checkout@v7
+      - name: Install pinned Rust toolchain
+        run: rustup toolchain install
+      - name: Cache Cargo artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: process-regressions
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.22.0
+      - name: Install regression test dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Verify process deadlines and descendant cleanup
+        run: pnpm test
+
   build-product:
     name: Install published TomlSmith native CLI
     runs-on: ubuntu-latest

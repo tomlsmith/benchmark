@@ -1,4 +1,5 @@
 /target/
+/node_modules/
 /.tools/
 /tools/prettier/node_modules/
 /results/

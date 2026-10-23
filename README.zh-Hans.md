@@ -111,9 +111,10 @@ TOMLSMITH_BENCH_FILTER=e2e/format/cold-stdin/1.1/v1_1_medium \
 
 正确性、preflight 与资源采样进程树受 `TOMLSMITH_BENCH_PROCESS_TIMEOUT_SECS` 限制（默认 120 秒）。跨产品门禁覆盖四条标准的 medium fixture 发布赛道；任何其他选定赛道（包括 large 与 stress fixture）都必须在计时前独立通过有界 preflight。计时迭代随后使用直接 spawn 路径，避免把 containment 开销算进产品延迟。完整契约见[测量方法](docs/methodology.md)。
 
-执行 Pull Request 门禁：
+在已安装 Node.js 24 与 pnpm 11.22.0 的环境中执行 Pull Request 门禁：
 
 ```bash
+pnpm install --frozen-lockfile
 ./scripts/check.sh
 ```
 
