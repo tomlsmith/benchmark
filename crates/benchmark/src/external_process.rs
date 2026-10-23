@@ -2,7 +2,7 @@ use std::{
     fs,
     io::{Read, Write},
     path::{Path, PathBuf},
-    process::{Command, ExitStatus, Stdio},
+    process::{Command, ExitStatus, Output, Stdio},
     time::{Duration, Instant},
 };
 
@@ -336,35 +336,37 @@ impl ProductRunner {
             path: binary.clone(),
             source,
         })?;
-        let version_output =
-            if let Some((expected_module, expected_version)) = go_module_requirement(product_id) {
-                probe_go_build_info(
-                    product_id,
-                    &binary,
-                    go_binary.as_ref(),
-                    expected_module,
-                    expected_version,
-                )?
-            } else {
-                let output = Command::new(&binary).arg("--version").output().map_err(|source| {
+        let version_output = if let Some((expected_module, expected_version)) =
+            go_module_requirement(product_id)
+        {
+            probe_go_build_info(
+                product_id,
+                &binary,
+                go_binary.as_ref(),
+                expected_module,
+                expected_version,
+            )?
+        } else {
+            let output =
+                probe_command_output(Command::new(&binary).arg("--version")).map_err(|source| {
                     ProductProcessError::Spawn { product: product_id, path: binary.clone(), source }
                 })?;
-                if !output.status.success() {
-                    return Err(ProductProcessError::VersionCommand {
-                        product: product_id,
-                        path: binary,
-                        status: output.status.code(),
-                        stderr: String::from_utf8_lossy(&output.stderr).trim().to_owned(),
-                    });
-                }
-                let stdout = String::from_utf8_lossy(&output.stdout);
-                let stderr = String::from_utf8_lossy(&output.stderr);
-                if stdout.trim().is_empty() {
-                    stderr.trim().to_owned()
-                } else {
-                    stdout.trim().to_owned()
-                }
-            };
+            if !output.status.success() {
+                return Err(ProductProcessError::VersionCommand {
+                    product: product_id,
+                    path: binary,
+                    status: output.status.code(),
+                    stderr: String::from_utf8_lossy(&output.stderr).trim().to_owned(),
+                });
+            }
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            if stdout.trim().is_empty() {
+                stderr.trim().to_owned()
+            } else {
+                stdout.trim().to_owned()
+            }
+        };
         if version_output.is_empty() {
             return Err(ProductProcessError::EmptyVersionOutput { product: product_id });
         }
@@ -1339,13 +1341,11 @@ fn probe_go_build_info(
     expected_module: &'static str,
     expected_version: &'static str,
 ) -> Result<String, ProductProcessError> {
-    let output =
-        Command::new(helper).args(["version", "-m"]).arg(binary).output().map_err(|source| {
-            ProductProcessError::GoBuildInfoSpawn {
-                product: product_id,
-                helper: helper.to_path_buf(),
-                source,
-            }
+    let output = probe_command_output(Command::new(helper).args(["version", "-m"]).arg(binary))
+        .map_err(|source| ProductProcessError::GoBuildInfoSpawn {
+            product: product_id,
+            helper: helper.to_path_buf(),
+            source,
         })?;
     if !output.status.success() {
         return Err(ProductProcessError::GoBuildInfoCommand {
@@ -1366,6 +1366,24 @@ fn probe_go_build_info(
         });
     }
     Ok(version_output)
+}
+
+fn probe_command_output(command: &mut Command) -> std::io::Result<Output> {
+    // A parallel fork can briefly inherit a newly written fixture's writable descriptor before
+    // exec closes it, causing Linux ETXTBSY even after the writer has closed its own descriptor.
+    // Only retry that spawn error, only during untimed identity probing, and never indefinitely.
+    let started = Instant::now();
+    loop {
+        let result = command.output();
+        let remaining = Duration::from_millis(250).saturating_sub(started.elapsed());
+        if !cfg!(target_os = "linux")
+            || !matches!(&result, Err(error) if error.kind() == std::io::ErrorKind::ExecutableFileBusy)
+            || remaining.is_zero()
+        {
+            return result;
+        }
+        std::thread::sleep(remaining.min(Duration::from_millis(10)));
+    }
 }
 
 fn inspect_prettier_plugin(
